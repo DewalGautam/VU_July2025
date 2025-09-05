@@ -1,71 +1,107 @@
-# Web Health Monitoring System
+# DewalGautam Web Health Monitoring
 
-## Project Overview
-This project implements an automated web health monitoring system using AWS CDK, Lambda, and CloudWatch. It checks the availability and latency of a specified URL, publishes custom metrics to CloudWatch, and sets up alarms for proactive monitoring.
+## Overview
+
+This project provides an automated solution for monitoring the health of web resources using AWS Lambda, CloudWatch, and CDK. It checks website availability and latency, publishes metrics to CloudWatch, and triggers alarms and notifications for outages or performance issues.
+
+## Features
+
+- Automated Website Health Checks
+- AWS Lambda Integration
+- CloudWatch Metrics & Alarms
+- EventBridge Scheduling
+- SNS Notifications
+- DynamoDB Integration (optional)
+- CDK Infrastructure as Code
 
 ## Architecture
-- *AWS Lambda*: Checks URL health and publishes metrics.
-- *AWS CloudWatch*: Stores metrics and triggers alarms.
-- *AWS EventBridge*: Schedules Lambda execution every minute.
-- *AWS CDK*: Infrastructure as code for resource deployment.
 
-![Architecture Diagram](https://docs.aws.amazon.com/cdk/latest/guide/images/cdk-architecture.png)
+- Lambda Function: Executes health checks and publishes metrics
+- CloudWatch: Stores metrics, triggers alarms, and provides dashboards
+- EventBridge: Schedules Lambda invocations
+- SNS: Sends notifications
+- DynamoDB: Stores results (optional)
+- CDK Stack: Manages all AWS resources
 
-## Folder Structure
+## Setup
 
+### Prerequisites
+
+- AWS account
+- AWS CLI configured
+- Node.js and npm
+- Python 3.8+
+- AWS CDK installed (`npm install -g aws-cdk`)
+- Email address for notifications
+
+### Installation
+
+1. **Clone the repository:**
+	```sh
+	git clone https://github.com/yourusername/VU_July2025.git
+	cd VU_July2025/DewalGautam
+	```
+
+2. **Set up Python environment:**
+	```sh
+	python -m venv .venv
+	.venv\Scripts\activate  # On Windows
+	pip install -r requirements.txt
+	```
+
+3. **Synthesize the CDK app:**
+	```sh
+	cdk synth
+	```
+
+4. **Bootstrap CDK (if first time):**
+	```sh
+	cdk bootstrap
+	```
+
+5. **Deploy the stack:**
+	```sh
+	cdk deploy
+	```
+
+## Configuration
+
+- Edit `modules/constants.py` to set the URL to monitor and metric namespaces.
+- Update the email address in the stack file for SNS notifications.
+
+## Usage
+
+- Monitoring: Lambda runs every minute, checks the target URL, and publishes metrics
+- Alarms: CloudWatch triggers alarms for downtime or high latency
+- Notifications: SNS sends email alerts when alarms are triggered
+- Dashboard: View metrics and alarms in the CloudWatch dashboard
+
+## File Structure
+
+```
 DewalGautam/
-    app.py
-    cdk.json
-    README.md
-    requirements.txt
-    modules/
-        CloudWatch_putMetric.py
-        constants.py
-        WebHealthLambda.py
-    dewal_gautam/
-        dewal_gautam_stack.py
+├── app.py
+├── cdk.json
+├── requirements.txt
+├── modules/
+│   ├── WebHealthLambda.py
+│   ├── HelloWorld.py
+│   └── constants.py
+├── dewal_gautam/
+│   └── dewal_gautam_stack.py
+└── tests/
+	 └── unit/
+		  └── test_dewal_gautam_stack.py
+```
 
+## Contributing
 
-## Implementation Details
-### Lambda Function
-- Checks URL availability (HTTP 200) and latency.
-- Publishes metrics to CloudWatch using CloudWatchMetricPublisher.
+Contributions are welcome! Please open issues or submit pull requests for improvements.
 
-### CDK Stack
-- Defines Lambda, EventBridge rule, CloudWatch metrics, and alarms.
-- Uses constants for configuration.
+## License
 
-### CloudWatch Monitoring
-- Metrics: url_availability, url_latency in namespace SabalProjectNameSpace.
-- Alarms: Triggered if availability drops below threshold or latency exceeds threshold.
+This project is licensed under the MIT License.
 
-## Testing
-- Unit and integration tests for Lambda logic.
-- Manual verification in AWS Console (CloudWatch metrics and alarms).
+## Author
 
-## Challenges & Solutions
-- *Lambda packaging issues*: Fixed by restructuring code and handler references.
-- *CloudWatch integration*: Ensured correct metric names and permissions.
-- *Code clarity*: Refactored for consistent naming and documentation.
-
-## Strengths & Limitations
-- *Strengths*: Automated, scalable, clear codebase.
-- *Limitations*: Monitors only one URL, no user dashboard.
-
-## Future Improvements
-- Support for multiple URLs.
-- Add notification (SNS/Email) on alarm.
-- Build a web dashboard for visualization.
-
-## Computer Ethics
-- No personal data collected.
-- IAM roles follow least privilege.
-- Transparent and responsible resource usage.
-
-## References
-1. Amazon Web Services. (2024). AWS Lambda Developer Guide. [Link](https://docs.aws.amazon.com/lambda/latest/dg/welcome.html)
-2. Amazon Web Services. (2024). AWS CloudWatch Documentation. [Link](https://docs.aws.amazon.com/cloudwatch/)
-3. Amazon Web Services. (2024). AWS CDK Documentation. [Link](https://docs.aws.amazon.com/cdk/latest/guide/home.html)
-4. Smith, J. (2022). Cloud Infrastructure Automation with AWS CDK. Journal of Cloud Computing, 10(2), pp. 45-60.
-5. Brown, L. & Green, P. (2023). Monitoring Web Applications in the Cloud. International Journal of Web Engineering, 15(1), pp. 101-115.
-6. Jones, M. (2021). Ethics in Cloud Computing. Computing Ethics Review, 8(3), pp. 200-215.
+Dewal Gautam
