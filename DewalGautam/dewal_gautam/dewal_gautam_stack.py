@@ -1,3 +1,5 @@
+
+# Restored stack code with clean function names, alarms, and previous improvements
 from aws_cdk import (
     Duration,
     Stack,
@@ -12,78 +14,79 @@ from aws_cdk import (
     aws_sns_subscriptions as subscriptions,
     aws_dynamodb as dynamodb,
 )
+from aws_cdk.aws_dynamodb import TableV2, AttributeType
 from constructs import Construct
-from modules import constants as constants 
+from modules import constants as constants
 
 class DewalGautamStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        # Create IAM role for Lambda with CloudWatch permissions
         webealthlambda_role = self.create_lambda_role("WebHealthLambdaRole")
 
-        # Create the Lambda function for web health monitoring
-        web_health_lambda = self.create_lambda(
+        web_health_lambda = _lambda.Function(
+            self,
             'WebHealthLambdaFunction',
-            './modules',
-            'WebHealthLambda.lambda_handler',
-            webealthlambda_role
+            code=_lambda.Code.from_asset('./modules'),
+            handler='WebHealthLambda.lambda_handler',
+            runtime=_lambda.Runtime.PYTHON_3_9,
+            role=webealthlambda_role,
+            timeout=Duration.seconds(20)
         )
         web_health_lambda.apply_removal_policy(RemovalPolicy.DESTROY)
 
-        # Schedule Lambda to run every minute
         lambda_schedule = events_.Schedule.rate(Duration.minutes(1))
         lambda_target = targets_.LambdaFunction(handler=web_health_lambda)
 
-        # Create EventBridge rule to trigger Lambda
         rule = events_.Rule(self, "WebHealthInvocationRule", description="Periodic Lambda execution", enabled=True,
                             schedule=lambda_schedule, targets=[lambda_target])
         rule.apply_removal_policy(RemovalPolicy.DESTROY)
 
-        # Define CloudWatch metrics for availability and latency
-        availability_metric = cloudwatch_.Metric(
-            namespace=constants.URL_MONITOR_NAMESPACE,
-            metric_name=constants.URL_MONITOR_METRIC_NAME_AVAILABILITY,
-            dimensions_map={"URL": constants.URL_TO_MONITOR},
-            label='URL Availability',
-            statistic="Average",
-            period=Duration.minutes(1),
-        )
+        self.metrics = {}
+        for url in constants.URLS_TO_MONITOR:
+            availability_metric = cloudwatch_.Metric(
+                namespace=constants.URL_MONITOR_NAMESPACE,
+                metric_name=constants.URL_MONITOR_METRIC_NAME_AVAILABILITY,
+                dimensions_map={"URL": url},
+                label=f'{url} Availability',
+                statistic="Average",
+                period=Duration.minutes(1),
+            )
+            latency_metric = cloudwatch_.Metric(
+                namespace=constants.URL_MONITOR_NAMESPACE,
+                metric_name=constants.URL_MONITOR_METRIC_NAME_LATENCY,
+                dimensions_map={"URL": url},
+                label=f'{url} Latency',
+                statistic="Average",
+                period=Duration.minutes(1),
+            )
+            self.metrics[url] = {
+                'availability': availability_metric,
+                'latency': latency_metric
+            }
 
-        latency_metric = cloudwatch_.Metric(
-            namespace=constants.URL_MONITOR_NAMESPACE,
-            metric_name=constants.URL_MONITOR_METRIC_NAME_LATENCY,
-            dimensions_map={"URL": constants.URL_TO_MONITOR},
-            label='URL Latency',
-            statistic="Average",
-            period=Duration.minutes(1),
-        )
-
-        # Create CloudWatch alarms for availability and latency
-        availability_alarm = cloudwatch_.Alarm(self, "AvailabilityAlarm",
-            comparison_operator=cloudwatch_.ComparisonOperator.LESS_THAN_THRESHOLD,
-            threshold=0.99,
+        availability_alarm = cloudwatch_.Alarm(self, "WebHealthAvailabilityAlarm",
+            comparison_operator=cloudwatch_.ComparisonOperator.LESS_THAN_OR_EQUAL_TO_THRESHOLD,
+            threshold=0,
             evaluation_periods=1,
             metric=availability_metric,
             treat_missing_data=cloudwatch_.TreatMissingData.BREACHING
         )
 
-        latency_alarm = cloudwatch_.Alarm(self, "LatencyAlarm",
+        latency_alarm = cloudwatch_.Alarm(self, "WebHealthLatencyAlarm",
             comparison_operator=cloudwatch_.ComparisonOperator.GREATER_THAN_THRESHOLD,
-            threshold=0.10, 
+            threshold=0.52,
             evaluation_periods=1,
             metric=latency_metric,
             treat_missing_data=cloudwatch_.TreatMissingData.BREACHING
         )
-        # SNS Topic for alarm notifications
         topic = sns.Topic(self, "AlarmNotification")
         topic.add_subscription(subscriptions.EmailSubscription("dewalgautam5@gmail.com"))
+        topic.add_subscription(subscriptions.SmsSubscription("+61421964254"))
 
-        # Attach SNS topic to CloudWatch alarms
         availability_alarm.add_alarm_action(cw_actions.SnsAction(topic))
         latency_alarm.add_alarm_action(cw_actions.SnsAction(topic))
 
-        # CloudWatch dashboard
         graph_widget = cloudwatch_.GraphWidget(
             title="Web Health Metrics",
             left=[availability_metric, latency_metric],
@@ -96,23 +99,35 @@ class DewalGautamStack(Stack):
         )
         dashboard=cloudwatch_.Dashboard(
             self,
-            "URLMonitorDashboard",
-            dashboard_name="URLMonitorDashboard"
+            "CloudWatch-Default",
+            dashboard_name="CloudWatch-Default"
         )
         dashboard.add_widgets(graph_widget)
 
-        # Create DynamoDB table V2
-        db_table = dynamodb.Table(self, "WebHealthTableV2",
-            partition_key={"name": "id", "type": dynamodb.AttributeType.STRING},
+        db_table = TableV2(
+            self,
+            "WebHealthTableV2",
+            partition_key={"name": "id", "type": AttributeType.STRING},
             removal_policy=RemovalPolicy.DESTROY
         )
 
         DBlambda_role = self.create_lambda_role("DBLambdaRole")
-        DB_lambda = self.create_lambda(
-            'Dewal_DynamoDBLambdaFunction',
-            './modules',
-            'DBLambda.lambda_handler',
-            DBlambda_role
+        DBlambda_role.add_to_policy(aws_iam.PolicyStatement(
+            actions=["lambda:InvokeFunction"],
+            resources=[web_health_lambda.function_arn]
+        ))
+        DB_lambda = _lambda.Function(
+            self,
+            'DewalDynamoDBLambdaFunction',
+            code=_lambda.Code.from_asset('./modules'),
+            handler='DBLambda.lambda_handler',
+            runtime=_lambda.Runtime.PYTHON_3_9,
+            role=DBlambda_role,
+            timeout=Duration.seconds(20),
+            environment={
+                "TABLE_NAME": db_table.table_name,
+                "WEBHEALTH_LAMBDA_NAME": "WebHealthLambda"
+            }
         )
         DB_lambda.apply_removal_policy(RemovalPolicy.DESTROY)
         db_table.grant_write_data(DB_lambda)
@@ -128,11 +143,12 @@ class DewalGautamStack(Stack):
                 aws_iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSLambdaBasicExecutionRole"),
                 aws_iam.ManagedPolicy.from_aws_managed_policy_name("CloudWatchFullAccess"),
                 aws_iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSLambdaVPCAccessExecutionRole"),
+                aws_iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSNSFullAccess"),
             ]
         )
         return lambda_role
 
-    def create_lambda(self, function_id, code_path, handler_name, role):
+    def create_lambda(self, function_id, code_path, handler_name, role, environment=None):
         """
         Creates and returns a Lambda function resource.
         Args:
@@ -140,11 +156,13 @@ class DewalGautamStack(Stack):
             code_path (str): Path to the Lambda code directory
             handler_name (str): Lambda handler function name
             role (aws_iam.Role): IAM role for the Lambda function
+            environment (dict, optional): Environment variables for the Lambda function
         """
         return _lambda.Function(self, function_id,
             code=_lambda.Code.from_asset(code_path),
             handler=handler_name,
             runtime=_lambda.Runtime.PYTHON_3_9,
             role=role,
-            timeout=Duration.seconds(20)
+            timeout=Duration.seconds(20),
+            environment=environment
         )
