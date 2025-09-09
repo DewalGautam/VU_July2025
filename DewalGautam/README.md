@@ -1,84 +1,105 @@
-# DewalGautam Web Health Monitoring
+## DewalGautam Web Health Monitoring
+## Introduction
 
-## Overview
+Ensuring websites remain reliable and responsive is critical for user experience and business continuity. This project implements an automated web health monitoring system built entirely on AWS serverless technologies. It checks the availability and latency of web resources, stores metrics, and triggers alerts when performance degrades or downtime occurs.
 
-This project provides an automated solution for monitoring the health of web resources using AWS Lambda, CloudWatch, and CDK. It checks website availability and latency, publishes metrics to CloudWatch, and triggers alarms and notifications for outages or performance issues.
+The project is packaged as an AWS CDK application, making deployment and infrastructure management simple and repeatable.
 
-## Features
+## Key Features
 
-- Automated Website Health Checks
-- AWS Lambda Integration
-- CloudWatch Metrics & Alarms
-- EventBridge Scheduling
-- SNS Notifications
-- DynamoDB Integration (optional)
-- CDK Infrastructure as Code
+Automated and scheduled website health checks
 
-## Architecture
+Real-time metrics published to Amazon CloudWatch
 
-- Lambda Function: Executes health checks and publishes metrics
-- CloudWatch: Stores metrics, triggers alarms, and provides dashboards
-- EventBridge: Schedules Lambda invocations
-- SNS: Sends notifications
-- DynamoDB: Stores results (optional)
-- CDK Stack: Manages all AWS resources
+Customizable alarms for downtime and latency thresholds
 
-## Setup
+Email notifications using Amazon SNS
 
-### Prerequisites
+Infrastructure managed with AWS CDK (Infrastructure as Code)
 
-- AWS account
-- AWS CLI configured
-- Node.js and npm
-- Python 3.8+
-- AWS CDK installed (`npm install -g aws-cdk`)
-- Email address for notifications
+Optional persistence of results in Amazon DynamoDB
 
-### Installation
+## System Architecture
 
-1. **Clone the repository:**
-	```sh
-	git clone https://github.com/yourusername/VU_July2025.git
-	cd VU_July2025/DewalGautam
-	```
+The monitoring system is composed of fully managed AWS services:
 
-2. **Set up Python environment:**
-	```sh
-	python -m venv .venv
-	.venv\Scripts\activate  # On Windows
-	pip install -r requirements.txt
-	```
+AWS Lambda → Performs health checks and reports results
 
-3. **Synthesize the CDK app:**
-	```sh
-	cdk synth
-	```
+Amazon CloudWatch → Stores metrics, creates dashboards, and triggers alarms
 
-4. **Bootstrap CDK (if first time):**
-	```sh
-	cdk bootstrap
-	```
+Amazon EventBridge → Runs the Lambda function on a fixed schedule
 
-5. **Deploy the stack:**
-	```sh
-	cdk deploy
-	```
+Amazon SNS → Sends alerts to configured email addresses
+
+Amazon DynamoDB (optional) → Persists results for long-term tracking
+
+AWS CDK → Provisions and manages the complete stack
+
+(Insert your architecture diagram or system flow here)
+
+## Setup Guide
+## Prerequisites
+
+AWS account with appropriate permissions
+
+AWS CLI configured locally
+
+Node.js and npm installed
+
+Python 3.8+ installed
+
+AWS CDK installed globally (npm install -g aws-cdk)
+
+Verified email address for SNS notifications
+
+## Installation Steps
+# 1. Clone the repository
+git clone https://github.com/DewalGautam/VU_July2025.git
+cd VU_July2025/DewalGautam
+
+# 2. Create and activate a Python virtual environment
+python -m venv .venv
+.venv\Scripts\activate  # On Windows
+source .venv/bin/activate  # On Mac/Linux
+
+# 3. Install dependencies
+pip install -r requirements.txt
+
+# 4. Synthesize the CDK application
+cdk synth
+
+# 5. Bootstrap CDK (first-time setup only)
+cdk bootstrap
+
+# 6. Deploy the stack
+cdk deploy
 
 ## Configuration
 
-- Edit `modules/constants.py` to set the URL to monitor and metric namespaces.
-- Update the email address in the stack file for SNS notifications.
+Edit modules/constants.py → specify the target URL and metric namespace.
+
+Update the SNS email address in the stack file to receive alerts.
 
 ## Usage
 
-- Monitoring: Lambda runs every minute, checks the target URL, and publishes metrics
-- Alarms: CloudWatch triggers alarms for downtime or high latency
-- Notifications: SNS sends email alerts when alarms are triggered
-- Dashboard: View metrics and alarms in the CloudWatch dashboard
+Monitoring → The Lambda function runs every minute and checks the configured URL.
 
-## File Structure
+Metrics → Results are published to CloudWatch for analysis and visualization.
 
-```
+Alarms → CloudWatch raises alarms on downtime or high latency.
+
+Notifications → Alerts are delivered to the registered email address via SNS.
+
+Dashboard → CloudWatch dashboards provide a live view of system health.
+
+## Results & Screenshots
+
+
+
+
+
+
+## Project Structure
 DewalGautam/
 ├── app.py
 ├── cdk.json
@@ -90,17 +111,16 @@ DewalGautam/
 ├── dewal_gautam/
 │   └── dewal_gautam_stack.py
 └── tests/
-	 └── unit/
-		  └── test_dewal_gautam_stack.py
-```
+    └── unit/
+        └── test_dewal_gautam_stack.py
 
-## Contributing
+## Contribution
 
-Contributions are welcome! Please open issues or submit pull requests for improvements.
+Contributions are encouraged. Please open issues for bugs or feature requests, and submit pull requests for proposed improvements.
 
 ## License
 
-This project is licensed under the MIT License.
+This project is distributed under the MIT License.
 
 ## Author
 

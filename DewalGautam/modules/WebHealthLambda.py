@@ -1,3 +1,100 @@
+
+# Web Health Lambda
+# Author: Dewal Gautam
+# Description: Lambda function to monitor website health and publish metrics
+
+import urllib.request
+import time
+import boto3
+import constants
+from CloudWatch_putMetric import CloudWatchMetricPublisher
+
+def get_latency(url):
+    """Returns the latency (in seconds) for a given URL."""
+    try:
+        start = time.time()
+        req = urllib.request.Request(f"https://{url}")
+        with urllib.request.urlopen(req, timeout=5) as response:
+            latency = time.time() - start
+        return latency
+    except Exception as e:
+        print(f"Error getting latency for {url}: {e}")
+        return 0
+
+def get_availability(url):
+    """Returns 1 if the URL is available (HTTP 200), else 0."""
+    try:
+        req = urllib.request.Request(f"https://{url}")
+        with urllib.request.urlopen(req, timeout=5) as response:
+            return 1 if response.status == 200 else 0
+    except Exception as e:
+        print(f"Error getting availability for {url}: {e}")
+        return 0
+
+def lambda_handler(event, context):
+    results = {}
+    metric_publisher = CloudWatchMetricPublisher()
+    for url in constants.URLS_TO_MONITOR:
+        dimensions = [
+            {'Name': 'URL', 'Value': url}
+        ]
+        # Check availability
+        availability = get_availability(url)
+        metric_publisher.publish_metric(constants.URL_MONITOR_NAMESPACE, constants.URL_MONITOR_METRIC_NAME_AVAILABILITY, dimensions, availability)
+
+        # Check latency
+        latency = get_latency(url)
+        metric_publisher.publish_metric(constants.URL_MONITOR_NAMESPACE, constants.URL_MONITOR_METRIC_NAME_LATENCY, dimensions, latency)
+
+        results[url] = {"availability": availability, "latency": latency}
+    return results
+import urllib.request
+import time
+from CloudWatch_putMetric import CloudWatchMetricPublisher
+import constants
+
+def get_url_latency(url):
+    """Returns the latency (in seconds) for a given URL."""
+    try:
+        start = time.time()
+        req = urllib.request.Request(f"https://{url}")
+        with urllib.request.urlopen(req, timeout=5) as response:
+            latency = time.time() - start
+        return latency
+    except Exception as e:
+        print(f"Error getting latency for {url}: {e}")
+        return 0
+
+def get_url_availability(url):
+    """Returns 1 if the URL is available (HTTP 200), else 0."""
+    try:
+        req = urllib.request.Request(f"https://{url}")
+        with urllib.request.urlopen(req, timeout=5) as response:
+            return 1 if response.status == 200 else 0
+    except Exception as e:
+        print(f"Error getting availability for {url}: {e}")
+        return 0
+
+# Lambda entry point: checks URL health and publishes metrics
+def lambda_handler(event, context):
+    results = {}
+    metric_publisher = CloudWatchMetricPublisher()
+    for url in constants.URLS_TO_MONITOR:
+        dimensions = [
+            {'Name': 'URL', 'Value': url}
+        ]
+        # Check availability
+        availability = get_url_availability(url)
+        metric_publisher.put_metric_data(constants.URL_MONITOR_NAMESPACE, constants.URL_MONITOR_METRIC_NAME_AVAILABILITY, dimensions, availability)
+
+        # Check latency
+        latency = get_url_latency(url)
+        metric_publisher.put_metric_data(constants.URL_MONITOR_NAMESPACE, constants.URL_MONITOR_METRIC_NAME_LATENCY, dimensions, latency)
+
+        results[url] = {"availability": availability, "latency": latency}
+    return results
+
+
 import urllib.request
 import time
 from CloudWatch_putMetric import CloudWatchMetricPublisher
