@@ -1,3 +1,9 @@
+# Main URL to monitor
+URL_TO_MONITOR = "example.com"
+# List of URLs to monitor
+URLS_TO_MONITOR = [URL_TO_MONITOR]
+# List of URLs to monitor
+URLS_TO_MONITOR = [URL_TO_MONITOR]
 URL_TO_MONITOR = "skipq.org"
 URL_MONITOR_NAMESPACE = "DewalProjectNameSpace"
 URL_MONITOR_METRIC_NAME_AVAILABILITY = "url_availability"
