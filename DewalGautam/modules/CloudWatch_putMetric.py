@@ -1,4 +1,3 @@
-#CLoudWatch_putMetric.py
 import boto3
 
 class CloudWatchMetricPublisher:

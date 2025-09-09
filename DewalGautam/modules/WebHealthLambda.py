@@ -1,8 +1,6 @@
 import urllib.request
 import time
-# Import helper class for publishing metrics to CloudWatch
 from CloudWatch_putMetric import CloudWatchMetricPublisher
-# Import project constants
 import constants
 
 def get_url_latency(url):
@@ -29,18 +27,19 @@ def get_url_availability(url):
 
 # Lambda entry point: checks URL health and publishes metrics
 def lambda_handler(event, context):
-    results = dict()
+    results = {}
     metric_publisher = CloudWatchMetricPublisher()
-    dimensions = [
-        {'Name': 'URL', 'Value': constants.URL_TO_MONITOR}
-    ]
-    # Check availability
-    availability = get_url_availability(constants.URL_TO_MONITOR)
-    metric_publisher.put_metric_data(constants.URL_MONITOR_NAMESPACE, constants.URL_MONITOR_METRIC_NAME_AVAILABILITY, dimensions, availability)
+    for url in constants.URLS_TO_MONITOR:
+        dimensions = [
+            {'Name': 'URL', 'Value': url}
+        ]
+        # Check availability
+        availability = get_url_availability(url)
+        metric_publisher.put_metric_data(constants.URL_MONITOR_NAMESPACE, constants.URL_MONITOR_METRIC_NAME_AVAILABILITY, dimensions, availability)
 
-    # Check latency
-    latency = get_url_latency(constants.URL_TO_MONITOR)
-    metric_publisher.put_metric_data(constants.URL_MONITOR_NAMESPACE, constants.URL_MONITOR_METRIC_NAME_LATENCY, dimensions, latency)
+        # Check latency
+        latency = get_url_latency(url)
+        metric_publisher.put_metric_data(constants.URL_MONITOR_NAMESPACE, constants.URL_MONITOR_METRIC_NAME_LATENCY, dimensions, latency)
 
-    results.update({"availability": availability, "latency": latency})
+        results[url] = {"availability": availability, "latency": latency}
     return results
