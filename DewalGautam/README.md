@@ -93,10 +93,10 @@ Notifications → Alerts are delivered to the registered email address via SNS.
 Dashboard → CloudWatch dashboards provide a live view of system health.
 
 ## Results & Screenshots
-
-
-
-
+![alt text](<Screenshot 2025-09-10 024340.png>)
+![alt text](<Screenshot 2025-09-10 024437.png>)
+![alt text](<Screenshot 2025-09-10 024516.png>)
+![alt text](<Screenshot 2025-09-10 024544.png>)
 
 
 ## Project Structure
@@ -118,10 +118,3 @@ DewalGautam/
 
 Contributions are encouraged. Please open issues for bugs or feature requests, and submit pull requests for proposed improvements.
 
-## License
-
-This project is distributed under the MIT License.
-
-## Author
-
-Dewal Gautam

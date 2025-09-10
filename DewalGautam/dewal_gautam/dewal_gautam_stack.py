@@ -75,7 +75,7 @@ class DewalGautamStack(Stack):
 
         latency_alarm = cloudwatch_.Alarm(self, "WebHealthLatencyAlarm",
             comparison_operator=cloudwatch_.ComparisonOperator.GREATER_THAN_THRESHOLD,
-            threshold=0.52,
+            threshold=0.40,
             evaluation_periods=1,
             metric=latency_metric,
             treat_missing_data=cloudwatch_.TreatMissingData.BREACHING
