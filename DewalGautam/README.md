@@ -97,6 +97,7 @@ Dashboard → CloudWatch dashboards provide a live view of system health.
 ![alt text](<Screenshot 2025-09-10 024437.png>)
 ![alt text](<Screenshot 2025-09-10 024516.png>)
 ![alt text](<Screenshot 2025-09-10 024544.png>)
+![alt text](<Screenshot 2025-09-10 163916.png>)
 
 
 ## Project Structure
